@@ -132,7 +132,7 @@ assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
 NODE_SOFT_LIMIT = 500000 * NUM_BINS
 TIME_SOFT_LIMIT = 60 * 60
 SOLVED_SOFT_LIMIT = 1000
-GRAPH_INFO_LOGGING = True
+GRAPH_INFO_LOGGING = False
 
 # solve limit check flag
 limit_hit = False

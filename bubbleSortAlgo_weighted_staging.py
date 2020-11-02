@@ -142,6 +142,7 @@ def search(initial_state, max_depth, sols_before_return):
     pred_dict[initial_state] = None
 
     while len(work_queue):
+
         c, depth, state = heappop(work_queue)
 
         if isSolved(state):
@@ -151,8 +152,8 @@ def search(initial_state, max_depth, sols_before_return):
                 sol_depth = depth
                 print(f'found new sol at depth {depth}')
 
-            if sols_before_return < 1:
-                break 
+            if sols_before_return == 0:
+                break
         
         if depth + 1 < max_depth:
             for neighbor_state in getReachableStates(state):
@@ -165,8 +166,8 @@ def search(initial_state, max_depth, sols_before_return):
     return sol, sol_depth, pred_dict, len(seen)
 
 if __name__ == '__main__':
-    max_search_depth = 66
-    sols_before_return = 10
+    max_search_depth = 70
+    sols_before_return = -1
 
     START_TIME = time.time()
 
