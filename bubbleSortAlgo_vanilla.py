@@ -1,10 +1,7 @@
 import time
-import pickle
-from collections import Counter, deque
-import csv
-from tqdm import tqdm
+# import pickle
+from collections import Counter
 from itertools import product
-import sys
 
 def getTop(state, i):
     if state[4 * i + 3] != ' ':
@@ -48,18 +45,18 @@ def moveBall(state, i, j):
 def getReachableStates(currState):
     numBins = len(currState) // 4
 
-    empty_bins = set( i for i in range(numBins) if isEmpty(currState, i) )
-    full_bins  = set( i for i in range(numBins) if isFull(currState, i) )
-    top_ball = [ getTop(currState, i) for i in range(numBins) ]
+    is_empty_bin = [ isEmpty(currState, i) for i in range(numBins) ]
+    is_full_bin  = [  isFull(currState, i) for i in range(numBins) ]
+    top_ball =     [  getTop(currState, i) for i in range(numBins) ]
     
     for i,j in product(range(numBins), range(numBins)):
         if i == j:
             continue
-        if i in empty_bins:
+        if is_empty_bin[i]:
             continue
-        if j in full_bins:
+        if is_full_bin[j]:
             continue
-        if j in empty_bins or (top_ball[i] == top_ball[j]):
+        if is_empty_bin[j] or (top_ball[i] == top_ball[j]):
             yield moveBall(currState, i, j)
 
 def isSolved(state):
@@ -90,61 +87,57 @@ INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + '
 assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
 
 
-def search(state, from_state, depth, rank, prev, sols, max_depth):
+def search(state, from_state, depth, seen, prev, max_depth):
 
     if depth > max_depth:
-        return
+        return None, -1
 
-    if state in rank:
-        if rank[state] > depth:
-            rank[state] = depth
-            prev[state] = from_state
-        
-        return
+    if state in seen:
+        return None, -1
     
-    rank[state] = depth
+    seen[state] = True
     prev[state] = from_state
 
     if isSolved(state):
-        sols.append(state)
-        print(f'found sol at depth {depth}')
-        return
+        return state,depth
 
     for neighbor_state in getReachableStates(state):
-        search(neighbor_state, state, depth + 1, rank, prev, sols, max_search_depth)
+        s, d = search(neighbor_state, state, depth + 1, seen, prev, max_depth)
+        if s:
+            return s, d
+    
+    return None, -1
 
-
-
+# gets any possible solution
 if __name__ == '__main__':
-    rank = {}
+    seen = {}
     prev = {}
-    sols = []
-    max_search_depth = 40
+    max_search_depth = 70
 
     START_TIME = time.time()
 
-    search(INITIAL_STATE, None, 0, rank, prev, sols, max_search_depth)
+    sol,depth = search(INITIAL_STATE, None, 0, seen, prev, max_search_depth)
 
     END_TIME = time.time()
 
-    print(f'searched {len(rank)} unique states to a max depth of {max_search_depth} in {round(END_TIME-START_TIME, 3)} seconds')
-    print(f'found {len(sols)} unique solutions')
+    # pickle.dump(rank, open('vanilla_rank_dict.p', 'wb'))
 
-    best_sol, best_rank = min([(s, rank[s]) for s in sols], key=lambda a: a[1], default=(None, -1))
-    print(f'shortest sol was {best_rank} steps long')
-    
-    s = best_sol
-    path = []
+    print(f'searched {len(seen)} unique states to a max depth of {max_search_depth} in {round(END_TIME-START_TIME, 3)} seconds')
 
-    while s:
-        path.append(s)
-        s = prev[s]
-    
-    path.reverse()
+    if sol:
+        print(f'sol was {depth} steps long')
+        
+        s = sol
+        path = []
 
-    for i,s in enumerate(path):
-        i_str = ' ' * (2 - len(str(i))) + str(i) + ' | '
-        s_str = ' '.join([s[4*i : 4*(i+1)] for i in range(len(s) // 4)])
+        while s:
+            path.append(s)
+            s = prev[s]
+        
+        path.reverse()
 
-        print(i_str + s_str)
+        for i,s in enumerate(path):
+            i_str = ' ' * (2 - len(str(i))) + str(i) + ' | '
+            s_str = ' '.join([s[4*i : 4*(i+1)] for i in range(len(s) // 4)])
 
+            print(i_str + s_str)
