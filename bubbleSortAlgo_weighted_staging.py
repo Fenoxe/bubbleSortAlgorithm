@@ -126,7 +126,7 @@ e - green
 d - dark yellow
 """
 
-INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
+INITIAL_STATE = 'rwld' + 'legl' + 'gtlb' + '    ' + '    ' + 'ryww' + 'pdgi' + 'tpio' + 'oewd' + 'bpbr' + 'yrdo' + 'iegi' + 'yoyt' + 'etbp'
 assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
 
 
@@ -141,15 +141,27 @@ def search(initial_state, max_depth, sols_before_return):
     seen[initial_state] = 0
     pred_dict[initial_state] = None
 
+    incr = 10
+    l_time = time.time()
+    s_time = l_time
+
     while len(work_queue):
 
+        if time.time() > incr + l_time:
+            l_time = time.time()
+            print(f'work_queue_size={len(work_queue)}  nodes_searched={len(seen)}  time_elapsed={round(l_time-s_time,3)}')
+
         c, depth, state = heappop(work_queue)
+
+        if state in seen and seen[state] < depth:
+            continue
 
         if isSolved(state):
             sols_before_return -= 1
             if depth < sol_depth:
                 sol = state
                 sol_depth = depth
+                max_depth = depth
                 print(f'found new sol at depth {depth}')
 
             if sols_before_return == 0:
@@ -166,7 +178,7 @@ def search(initial_state, max_depth, sols_before_return):
     return sol, sol_depth, pred_dict, len(seen)
 
 if __name__ == '__main__':
-    max_search_depth = 70
+    max_search_depth = 75
     sols_before_return = -1
 
     START_TIME = time.time()
