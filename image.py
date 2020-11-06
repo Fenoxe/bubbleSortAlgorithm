@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import skvideo.io
 from tqdm import tqdm
+from random import randint
 
 class ImageLayer:
 
@@ -130,27 +131,27 @@ class ImageLayer:
             print('single row solves not currently supported, solve it yo damn self lol')
             return None      
 
-        # sort pts by x coord then by y coord, results in pts put into bins
-        circle_coords = np.array([(x,y) for x,y in sorted(list(circle_coords), key=lambda t: (t[0],t[1]))])
-
-        # reorganize pts to be indexed by bin
-        bin_coords = circle_coords.reshape((num_full_bins,4,2))
-        
-        # set x coord of whole bin to be same
-        bin_coords[:,:,0] = np.repeat(np.mean(bin_coords[:,:,0], axis=1).reshape(num_full_bins,1), 4, axis=1)
-
-        # sort each bin individually by y coordinate
-        bin_coords = np.array([sorted(b, key=lambda c: c[1], reverse=True) for b in bin_coords])
-
-        # split top row and bottom row bins
+        # sort by (row, x coord, y coord)
         if THREE_ROWS:
             y_height = np.max(circle_coords[:,1]) - np.min(circle_coords[:,1])
             y_divider1 = np.min(circle_coords[:,1]) + (1 * y_height / 3)
             y_divider2 = np.min(circle_coords[:,1]) + (2 * y_height / 3)
-            bin_coords = np.array([b for b in sorted(bin_coords, key=lambda b: int(np.mean(b[:,1]) > y_divider1) + int(np.mean(b[:,1]) > y_divider2))])
+
+            circle_coords = np.array([(x,y) for x,y in sorted(list(circle_coords), key=lambda t: (int(t[1] > y_divider1) + int(t[1] > y_divider2),t[0],-1 * t[1]))])
+
         elif TWO_ROWS:
             y_divider = 0.5 * (np.max(circle_coords[:,1]) + np.min(circle_coords[:,1]))
-            bin_coords = np.array([b for b in sorted(bin_coords, key=lambda b: np.mean(b[:,1]) > y_divider)])
+
+            circle_coords = np.array([(x,y) for x,y in sorted(list(circle_coords), key=lambda t: (int(t[1] > y_divider),t[0],-1 * t[1]))])
+
+        # reorganize pts to be indexed by prospective bin
+        bin_coords = circle_coords.reshape((num_full_bins,4,2))
+
+        # set x coord of whole bin to be same
+        bin_coords[:,:,0] = np.repeat(np.mean(bin_coords[:,:,0], axis=1).reshape(num_full_bins,1), 4, axis=1)
+
+        # resort each bin individually by y value
+        bin_coords = np.array([sorted(b, key=lambda c: c[1], reverse=True) for b in bin_coords])
 
         """
             now, all coordinates are sorted in this way:
@@ -166,7 +167,7 @@ class ImageLayer:
                     bin_coords[a+1, 0]  ...  bin_coords[b, 0]
 
         """
-        
+
         return bin_coords
 
     def _displayPts(self, im, pts):
@@ -311,13 +312,17 @@ class ImageLayer:
 
                     cv2.circle(vid[frame_i], pos, ImageLayer.BALL_RAD, color, thickness=-1)
         
-        writer = skvideo.io.FFmpegWriter(self.output_dir + filename + '.mp4', outputdict={
+        writer = skvideo.io.FFmpegWriter(self.output_dir + filename + '.mp4',
+        inputdict={
+            '-r': '5',
+        }, outputdict={
             '-vcodec': 'libx264',
             '-crf': '0',
             '-preset':'veryslow',
+            '-r': '5',
         })
 
-        print('writing buffer to disk')
+        print('writing video in buffer to disk')
         for frame_i in tqdm(range(vid.shape[0])):
             writer.writeFrame(vid[frame_i,:,:,::-1])
 
