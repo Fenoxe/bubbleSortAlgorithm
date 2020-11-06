@@ -118,133 +118,134 @@ def int_to_str(i):
     return s
 
 
-START_TIME = time.time()
+if __name__ == '__main__':
+    START_TIME = time.time()
 
-# define initial game state
-"""
-p - purple
-r - red
-l - light blue
-y - yellow
-o - orange
-b - blue
-w - brown
-i - pink
-t - teal
-g - gray
-e - green
-d - dark yellow
-"""
-INITIAL_STATE_s = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
-NUM_BINS = len(INITIAL_STATE_s) // 4
-assert all([(n == 4) for c, n in Counter(INITIAL_STATE_s).items() if c != ' '])
-INITIAL_STATE_i = str_to_int(INITIAL_STATE_s)
+    # define initial game state
+    """
+    p - purple
+    r - red
+    l - light blue
+    y - yellow
+    o - orange
+    b - blue
+    w - brown
+    i - pink
+    t - teal
+    g - gray
+    e - green
+    d - dark yellow
+    """
+    INITIAL_STATE_s = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
+    NUM_BINS = len(INITIAL_STATE_s) // 4
+    assert all([(n == 4) for c, n in Counter(INITIAL_STATE_s).items() if c != ' '])
+    INITIAL_STATE_i = str_to_int(INITIAL_STATE_s)
 
-# solve limits and reporting config
-NODE_SOFT_LIMIT = 250000 * NUM_BINS
-TIME_SOFT_LIMIT = 60 * 60
+    # solve limits and reporting config
+    NODE_SOFT_LIMIT = 250000 * NUM_BINS
+    TIME_SOFT_LIMIT = 60 * 60
 
-# solve limit check flag
-limit_hit = False
+    # solve limit check flag
+    limit_hit = False
 
-# initialize graph and sets
-solveGraph = nx.DiGraph() # contains strs encoded as ints
-addNode(solveGraph, INITIAL_STATE_i)
+    # initialize graph and sets
+    solveGraph = nx.DiGraph() # contains strs encoded as ints
+    addNode(solveGraph, INITIAL_STATE_i)
 
-prevSearched = set() # contains strs encoded as ints
-currSearch = set() # contains strs encoded as ints
-futureSearch = set([INITIAL_STATE_i]) # contains strs encoded as ints
-solvedStates = set() # contains strs encoded as ints
+    prevSearched = set() # contains strs encoded as ints
+    currSearch = set() # contains strs encoded as ints
+    futureSearch = set([INITIAL_STATE_i]) # contains strs encoded as ints
+    solvedStates = set() # contains strs encoded as ints
 
-I = 0
+    I = 0
 
-while len(futureSearch) > 0:
-    print(f'[INFO]  starting search for depth={I+1}')
+    while len(futureSearch) > 0:
+        print(f'[INFO]  starting search for depth={I+1}')
 
-    currSearch = futureSearch
-    futureSearch = set()
-    
-    s = time.time()
+        currSearch = futureSearch
+        futureSearch = set()
+        
+        s = time.time()
 
-    if NODE_SOFT_LIMIT and len(solveGraph) > NODE_SOFT_LIMIT:
-        print(f'[LIMIT] node soft limit ({NODE_SOFT_LIMIT}) reached')
-        limit_hit = True
-        if len(solvedStates) > 0:
-            break
-
-    if TIME_SOFT_LIMIT and (time.time() - START_TIME) > TIME_SOFT_LIMIT:
-        print(f'[LIMIT] time soft limit ({TIME_SOFT_LIMIT}) reached')
-        limit_hit = True
-        if len(solvedStates) > 0:
-            break
-
-    for currState_i in tqdm(currSearch):
-
-        assert (all([(n == 4) for c, n in Counter(int_to_str(currState_i)).items() if c != ' ']) and len(int_to_str(currState_i)) == NUM_BINS * 4)
-
-        if limit_hit and len(solvedStates) > 0:
-            break
-
-        if isSolved(int_to_str(currState_i), NUM_BINS):
-            prevSearched.add(currState_i)
-            solvedStates.add(currState_i)
-
-            print(f'[INFO]  found a solution! ({len(solvedStates)} total found)')
-
-            if limit_hit:
+        if NODE_SOFT_LIMIT and len(solveGraph) > NODE_SOFT_LIMIT:
+            print(f'[LIMIT] node soft limit ({NODE_SOFT_LIMIT}) reached')
+            limit_hit = True
+            if len(solvedStates) > 0:
                 break
 
-            continue
+        if TIME_SOFT_LIMIT and (time.time() - START_TIME) > TIME_SOFT_LIMIT:
+            print(f'[LIMIT] time soft limit ({TIME_SOFT_LIMIT}) reached')
+            limit_hit = True
+            if len(solvedStates) > 0:
+                break
 
-        for reachableState_s in getReachableStates(int_to_str(currState_i), NUM_BINS):
-            reachableState_i = str_to_int(reachableState_s)
-            addEdge(solveGraph, currState_i, reachableState_i)
-            
-            if reachableState_i not in prevSearched:
-                futureSearch.add(reachableState_i)
+        for currState_i in tqdm(currSearch):
 
-        prevSearched.add(currState_i)
+            assert (all([(n == 4) for c, n in Counter(int_to_str(currState_i)).items() if c != ' ']) and len(int_to_str(currState_i)) == NUM_BINS * 4)
 
-    print(f'[INFO]  time elapsed = {int(round(time.time()-START_TIME))} seconds')
+            if limit_hit and len(solvedStates) > 0:
+                break
+
+            if isSolved(int_to_str(currState_i), NUM_BINS):
+                prevSearched.add(currState_i)
+                solvedStates.add(currState_i)
+
+                print(f'[INFO]  found a solution! ({len(solvedStates)} total found)')
+
+                if limit_hit:
+                    break
+
+                continue
+
+            for reachableState_s in getReachableStates(int_to_str(currState_i), NUM_BINS):
+                reachableState_i = str_to_int(reachableState_s)
+                addEdge(solveGraph, currState_i, reachableState_i)
+                
+                if reachableState_i not in prevSearched:
+                    futureSearch.add(reachableState_i)
+
+            prevSearched.add(currState_i)
+
+        print(f'[INFO]  time elapsed = {int(round(time.time()-START_TIME))} seconds')
+        print()
+
+        I += 1
+
+    print()
+    print(f'[POST]  final graph size = {len(solveGraph)}')
+    print(f'[POST]  finding best solution...')
+
+    if limit_hit:
+        shortestPath = None
+        shortestPath_l = float('inf')
+
+        for finalState_i in tqdm(solvedStates):
+            shortestPathCurr = nx.algorithms.bidirectional_shortest_path(solveGraph, INITIAL_STATE_i, finalState_i)
+
+            if (l := len(shortestPathCurr)) < shortestPath_l:
+                shortestPath = shortestPathCurr
+                shortestPath_l = l
+        
+    else:
+        for _, finalState_i in tqdm(nx.algorithms.bfs_edges(solveGraph, INITIAL_STATE_i)):
+            if isSolved(int_to_str(finalState_i), NUM_BINS):
+                break
+        
+        shortestPath_i = nx.algorithms.bidirectional_shortest_path(solveGraph, INITIAL_STATE_i, finalState_i)
+        shortestPath_l = len(shortestPath_i)
+
+    print(f'[POST]  found optimal solution')
+    print(f'[POST]  # of moves = {shortestPath_l}')
     print()
 
-    I += 1
+    for d, state_i in enumerate(shortestPath_i):
+        print(f'{d}: {int_to_str(state_i)}', end='\n\n')
 
-print()
-print(f'[POST]  final graph size = {len(solveGraph)}')
-print(f'[POST]  finding best solution...')
+    END_TIME = time.time()
 
-if limit_hit:
-    shortestPath = None
-    shortestPath_l = float('inf')
+    print(f'[POST]  algo finished in {END_TIME - START_TIME} seconds')
 
-    for finalState_i in tqdm(solvedStates):
-        shortestPathCurr = nx.algorithms.bidirectional_shortest_path(solveGraph, INITIAL_STATE_i, finalState_i)
+    with open('moves.pickle', 'wb') as buf:
+        pickle.dump(shortestPath_i, buf, protocol=pickle.HIGHEST_PROTOCOL)
 
-        if (l := len(shortestPathCurr)) < shortestPath_l:
-            shortestPath = shortestPathCurr
-            shortestPath_l = l
-    
-else:
-    for _, finalState_i in tqdm(nx.algorithms.bfs_edges(solveGraph, INITIAL_STATE_i)):
-        if isSolved(int_to_str(finalState_i), NUM_BINS):
-            break
-    
-    shortestPath_i = nx.algorithms.bidirectional_shortest_path(solveGraph, INITIAL_STATE_i, finalState_i)
-    shortestPath_l = len(shortestPath_i)
-
-print(f'[POST]  found optimal solution')
-print(f'[POST]  # of moves = {shortestPath_l}')
-print()
-
-for d, state_i in enumerate(shortestPath_i):
-    print(f'{d}: {int_to_str(state_i)}', end='\n\n')
-
-END_TIME = time.time()
-
-print(f'[POST]  algo finished in {END_TIME - START_TIME} seconds')
-
-with open('moves.pickle', 'wb') as buf:
-    pickle.dump(shortestPath_i, buf, protocol=pickle.HIGHEST_PROTOCOL)
-
-print(f'[POST]  saved to pickled file')
+    print(f'[POST]  saved to pickled file')

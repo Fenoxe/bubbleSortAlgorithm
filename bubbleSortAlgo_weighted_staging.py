@@ -1,9 +1,11 @@
 import time
 from collections import Counter, deque
 from itertools import product
-# import pickle
+import pickle
 import numpy as np
 from heapq import heappush, heappop
+import sys
+from image import ImageLayer
 
 def moveBall(state, i, j):
     # get raw index of top ball in bin i
@@ -124,11 +126,8 @@ t - teal
 g - gray
 e - green
 d - dark yellow
+n - indigo
 """
-
-INITIAL_STATE = 'rwld' + 'legl' + 'gtlb' + '    ' + '    ' + 'ryww' + 'pdgi' + 'tpio' + 'oewd' + 'bpbr' + 'yrdo' + 'iegi' + 'yoyt' + 'etbp'
-assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
-
 
 def search(initial_state, max_depth, sols_before_return):
 
@@ -149,7 +148,7 @@ def search(initial_state, max_depth, sols_before_return):
 
         if time.time() > incr + l_time:
             l_time = time.time()
-            print(f'work_queue_size={len(work_queue)}  nodes_searched={len(seen)}  time_elapsed={round(l_time-s_time,3)}')
+            print(f'work_queue_size={len(work_queue)}  nodes_searched={len(seen)}  time_elapsed={int(l_time-s_time)} seconds')
 
         c, depth, state = heappop(work_queue)
 
@@ -177,17 +176,35 @@ def search(initial_state, max_depth, sols_before_return):
 
     return sol, sol_depth, pred_dict, len(seen)
 
+
 if __name__ == '__main__':
-    max_search_depth = 75
-    sols_before_return = -1
+
+    imageLayer = ImageLayer('./input/', './output/')
+
+    if len(sys.argv) != 3:
+        print('incorrect syntax for cmd')
+        exit()
+    
+    filename = str(sys.argv[1])
+    num_bins = int(sys.argv[2])
+
+    if num_bins < 0:
+        print('generating video from pre-existing solution...')
+        path = pickle.load(open(filename,'rb'))
+        imageLayer.createSolPathVideo(filename.split('.')[0], path)
+        exit()
+
+
+    initial_state = imageLayer.parseImage(filename, num_bins)
+
+    assert all([(n == 4) for c, n in Counter(initial_state).items() if c != ' '])
+
+    max_search_depth = 75 # start high, quasi dfs finds first solution quickly and lowers this value to best depth of sol
+    sols_before_return = -1 # exhaustive
 
     START_TIME = time.time()
-
-    sol, depth, pred_dict, nodes_searched = search(INITIAL_STATE, max_search_depth, sols_before_return)
-
+    sol, depth, pred_dict, nodes_searched = search(initial_state, max_search_depth, sols_before_return)
     END_TIME = time.time()
-
-    # pickle.dump(pred_dict, open('optim_rank_dict.p', 'wb'))
 
     print(f'searched {nodes_searched} unique states to a max depth of {max_search_depth} in {round(END_TIME-START_TIME, 3)} seconds')
 
@@ -203,9 +220,6 @@ if __name__ == '__main__':
         
         path.reverse()
 
-        for i,s in enumerate(path):
-            i_str = ' ' * (2 - len(str(i))) + str(i) + ' | '
-            s_str = ' '.join([s[4*i : 4*(i+1)] for i in range(len(s) // 4)])
-
-            print(i_str + s_str)
-
+        pickle.dump(path, open(filename.split('.')[0] + '_solution.p', 'wb'))
+        
+        imageLayer.createSolPathVideo(filename.split('.')[0], path)

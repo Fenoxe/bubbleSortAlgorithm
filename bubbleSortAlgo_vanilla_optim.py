@@ -150,25 +150,6 @@ def isSolved(state):
             return False
     return True
 
-"""
-p - purple
-r - red
-l - light blue
-y - yellow
-o - orange
-b - blue
-w - brown
-i - pink
-t - teal
-g - gray
-e - green
-d - dark yellow
-"""
-
-INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
-assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
-
-
 def search(initial_state, max_depth):
 
     work_queue = deque([(initial_state, 0)])
@@ -195,6 +176,23 @@ def search(initial_state, max_depth):
     return None, -1, pred_dict, len(seen)
 
 if __name__ == '__main__':
+    """
+    p - purple
+    r - red
+    l - light blue
+    y - yellow
+    o - orange
+    b - blue
+    w - brown
+    i - pink
+    t - teal
+    g - gray
+    e - green
+    d - dark yellow
+    """
+    INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
+    assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
+
     max_search_depth = 40
 
     START_TIME = time.time()
@@ -203,7 +201,7 @@ if __name__ == '__main__':
 
     END_TIME = time.time()
 
-    # pickle.dump(pred_dict, open('optim_rank_dict.p', 'wb'))
+    pickle.dump(pred_dict, open('optim_rank_dict.p', 'wb'))
 
     print(f'searched {nodes_searched} unique states to a max depth of {max_search_depth} in {round(END_TIME-START_TIME, 3)} seconds')
 

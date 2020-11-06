@@ -73,27 +73,6 @@ def isSolved(state):
             return False
     return True
 
-
-"""
-p - purple
-r - red
-l - light blue
-y - yellow
-o - orange
-b - blue
-w - brown
-i - pink
-t - teal
-g - gray
-e - green
-d - dark yellow
-"""
-
-INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
-
-assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
-
-
 def search_worker(work_q, rank_d, max_depth, sols, num_sols_found, manager):
 
     ran_once = False
@@ -148,10 +127,25 @@ def search(state, depth, rank, sols, max_depth):
 
 
 if __name__ == '__main__':
+    """
+    p - purple
+    r - red
+    l - light blue
+    y - yellow
+    o - orange
+    b - blue
+    w - brown
+    i - pink
+    t - teal
+    g - gray
+    e - green
+    d - dark yellow
+    """
+    INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
+    assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
+    
     max_search_depth = 20
     num_sols_found = 0
-
-
 
     START_TIME = time.time()
 

@@ -68,25 +68,6 @@ def isSolved(state):
             return False
     return True
 
-"""
-p - purple
-r - red
-l - light blue
-y - yellow
-o - orange
-b - blue
-w - brown
-i - pink
-t - teal
-g - gray
-e - green
-d - dark yellow
-"""
-
-INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
-assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
-
-
 def search(state, from_state, depth, seen, prev, max_depth):
 
     if depth > max_depth:
@@ -110,6 +91,23 @@ def search(state, from_state, depth, seen, prev, max_depth):
 
 # gets any possible solution
 if __name__ == '__main__':
+    """
+    p - purple
+    r - red
+    l - light blue
+    y - yellow
+    o - orange
+    b - blue
+    w - brown
+    i - pink
+    t - teal
+    g - gray
+    e - green
+    d - dark yellow
+    """
+    INITIAL_STATE = 'prly' + 'oyoy' + 'bwpi' + 'bgtb' + 'ewei' + 'ypgr' + 'digr' + 'dpgl' + 'teot' + 'owll' + 'tdeb' + 'ridw' + '    ' + '    '
+    assert all([(n == 4) for c, n in Counter(INITIAL_STATE).items() if c != ' '])
+
     seen = {}
     prev = {}
     max_search_depth = 70
